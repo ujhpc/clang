@@ -85,6 +85,7 @@ bool types::isAcceptedByClang(ID Id) {
   case TY_Asm:
   case TY_C: case TY_PP_C:
   case TY_CL:
+  case TY_CLXX:
   case TY_CUDA:
   case TY_ObjC: case TY_PP_ObjC: case TY_PP_ObjC_Alias:
   case TY_CXX: case TY_PP_CXX:
@@ -150,6 +151,8 @@ types::ID types::lookupTypeForExtension(const char *Ext) {
            .Case("cc", TY_CXX)
            .Case("CC", TY_CXX)
            .Case("cl", TY_CL)
+           .Case("cl++", TY_CLXX)
+           .Case("clpp", TY_CLXX)
            .Case("cp", TY_CXX)
            .Case("cu", TY_CUDA)
            .Case("hh", TY_CXXHeader)

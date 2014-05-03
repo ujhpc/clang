@@ -135,6 +135,17 @@ LANGSTANDARD(opencl12, "CL1.2",
              "OpenCL 1.2",
              LineComment | C99 | Digraphs | HexFloat)
 
+// OpenCL++ (provisional)
+LANGSTANDARD(openclxx, "cl++",
+             "OpenCL 1.0",
+             LineComment | CPlusPlus | CPlusPlus11 | Digraphs | HexFloat)
+LANGSTANDARD(openclxx11, "CL++1.1",
+             "OpenCL 1.1",
+             LineComment | CPlusPlus | CPlusPlus11 | Digraphs | HexFloat)
+LANGSTANDARD(openclxx12, "CL++1.2",
+             "OpenCL 1.2",
+             LineComment | CPlusPlus | CPlusPlus11 | Digraphs | HexFloat)
+
 // CUDA
 LANGSTANDARD(cuda, "cuda",
              "NVIDIA CUDA(tm)",

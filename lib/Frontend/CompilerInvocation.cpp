@@ -907,6 +907,7 @@ static InputKind ParseFrontendArgs(FrontendOptions &Opts, ArgList &Args,
     DashX = llvm::StringSwitch<InputKind>(A->getValue())
       .Case("c", IK_C)
       .Case("cl", IK_OpenCL)
+      .Case("cl++", IK_OpenCLXX)
       .Case("cuda", IK_CUDA)
       .Case("c++", IK_CXX)
       .Case("objective-c", IK_ObjC)
@@ -1113,6 +1114,9 @@ void CompilerInvocation::setLangDefaults(LangOptions &Opts, InputKind IK,
     case IK_OpenCL:
       LangStd = LangStandard::lang_opencl;
       break;
+    case IK_OpenCLXX:
+      LangStd = LangStandard::lang_openclxx;
+      break;
     case IK_CUDA:
       LangStd = LangStandard::lang_cuda;
       break;
@@ -1147,12 +1151,16 @@ void CompilerInvocation::setLangDefaults(LangOptions &Opts, InputKind IK,
   Opts.ImplicitInt = Std.hasImplicitInt();
 
   // Set OpenCL Version.
-  Opts.OpenCL = LangStd == LangStandard::lang_opencl || IK == IK_OpenCL;
-  if (LangStd == LangStandard::lang_opencl)
+  Opts.OpenCL = LangStd == LangStandard::lang_opencl ||
+                LangStd == LangStandard::lang_openclxx || IK == IK_OpenCL;
+  if (LangStd == LangStandard::lang_opencl ||
+      LangStd == LangStandard::lang_openclxx)
     Opts.OpenCLVersion = 100;
-  else if (LangStd == LangStandard::lang_opencl11)
+  else if (LangStd == LangStandard::lang_opencl11 ||
+           LangStd == LangStandard::lang_openclxx11)
       Opts.OpenCLVersion = 110;
-  else if (LangStd == LangStandard::lang_opencl12)
+  else if (LangStd == LangStandard::lang_opencl12 ||
+           LangStd == LangStandard::lang_openclxx12)
     Opts.OpenCLVersion = 120;
   
   // OpenCL has some additional defaults.
@@ -1300,6 +1308,11 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
           Diags.Report(diag::err_drv_argument_not_allowed_with)
             << A->getAsString(Args) << "OpenCL";
         break;
+      case IK_OpenCLXX:
+        if (!Std.isCPlusPlus())
+          Diags.Report(diag::err_drv_argument_not_allowed_with)
+            << A->getAsString(Args) << "OpenCL++";
+        break;
       case IK_CUDA:
         if (!Std.isCPlusPlus())
           Diags.Report(diag::err_drv_argument_not_allowed_with)
@@ -1319,6 +1332,9 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
     .Case("CL", LangStandard::lang_opencl)
     .Case("CL1.1", LangStandard::lang_opencl11)
     .Case("CL1.2", LangStandard::lang_opencl12)
+    .Case("CL++", LangStandard::lang_openclxx)
+    .Case("CL++1.1", LangStandard::lang_openclxx11)
+    .Case("CL++1.2", LangStandard::lang_openclxx12)
     .Default(LangStandard::lang_unspecified);
     
     if (OpenCLLangStd == LangStandard::lang_unspecified) {
