@@ -553,11 +553,13 @@ ExprResult Sema::DefaultLvalueConversion(Expr *E) {
 
   // We don't want to throw lvalue-to-rvalue casts on top of
   // expressions of certain types in C++.
+#if 0
   if (getLangOpts().CPlusPlus &&
       (E->getType() == Context.OverloadTy ||
        T->isDependentType() ||
        T->isRecordType()))
     return Owned(E);
+#endif
 
   // The C standard is actually really unclear on this point, and
   // DR106 tells us what the result should be but not why.  It's

@@ -3869,6 +3869,8 @@ CXString clang_getCursorKindSpelling(enum CXCursorKind Kind) {
     return cxstring::createRef("asm label");
   case CXCursor_PackedAttr:
     return cxstring::createRef("attribute(packed)");
+  case CXCursor_PODAssignAttr:
+    return cxstring::createRef("attribute(pod_assign)");
   case CXCursor_PureAttr:
     return cxstring::createRef("attribute(pure)");
   case CXCursor_ConstAttr:

@@ -4599,6 +4599,10 @@ void InitializationSequence::InitializeFrom(Sema &S,
       
   //     - If the destination type is a (possibly cv-qualified) class type:
   if (DestType->isRecordType()) {
+    if (Entity.getDecl()->hasAttr<PODAssignAttr>()) {
+      AddCAssignmentStep(DestType);
+      return;
+    }
     //     - If the initialization is direct-initialization, or if it is
     //       copy-initialization where the cv-unqualified version of the
     //       source type is the same class as, or a derived class of, the

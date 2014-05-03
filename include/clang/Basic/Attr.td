@@ -1038,6 +1038,12 @@ def Pcs : InheritableAttr {
   let Documentation = [PcsDocs];
 }
 
+def PODAssign : InheritableAttr {
+  let Spellings = [GCC<"pod_assign">];
+  let Subjects = SubjectList<[Var], ErrorDiag>;
+  let Documentation = [Undocumented];
+}
+
 def Pure : InheritableAttr {
   let Spellings = [GCC<"pure">];
   let Documentation = [Undocumented];

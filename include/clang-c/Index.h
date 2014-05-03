@@ -2168,7 +2168,8 @@ enum CXCursorKind {
   CXCursor_PureAttr                      = 409,
   CXCursor_ConstAttr                     = 410,
   CXCursor_NoDuplicateAttr               = 411,
-  CXCursor_LastAttr                      = CXCursor_NoDuplicateAttr,
+  CXCursor_PODAssignAttr                 = 412,
+  CXCursor_LastAttr                      = CXCursor_PODAssignAttr,
      
   /* Preprocessing */
   CXCursor_PreprocessingDirective        = 500,

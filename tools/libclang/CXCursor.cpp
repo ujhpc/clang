@@ -53,6 +53,7 @@ static CXCursorKind GetCursorKind(const Attr *A) {
     case attr::Pure: return CXCursor_PureAttr;
     case attr::Const: return CXCursor_ConstAttr;
     case attr::NoDuplicate: return CXCursor_NoDuplicateAttr;
+    case attr::PODAssign: return CXCursor_PODAssignAttr;
   }
 
   return CXCursor_UnexposedAttr;
