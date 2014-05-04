@@ -296,6 +296,12 @@ Sema::CheckBuiltinFunctionCall(unsigned BuiltinID, CallExpr *TheCall) {
     if (SemaBuiltinAddressof(*this, TheCall))
       return ExprError();
     break;
+  case Builtin::BI__builtin_assign:
+    if (checkArgCount(*this, TheCall, 2))
+      return true;
+    return CreateBuiltinBinOp(TheCall->getLocStart(), BO_Assign,
+                              TheCall->getArg(0), TheCall->getArg(1));
+    break;
   }
   
   // Since the target specific builtins for each arch overlap, only check those

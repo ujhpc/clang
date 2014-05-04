@@ -1204,6 +1204,7 @@ BUILTIN(__builtin_smulll_overflow, "bSLLiCSLLiCSLLi*", "n")
 
 // Clang builtins (not available in GCC).
 BUILTIN(__builtin_addressof, "v*v&", "nct")
+BUILTIN(__builtin_assign, "v.", "t")
 
 #undef BUILTIN
 #undef LIBBUILTIN
