@@ -71,6 +71,14 @@ FallbackStyle("fallback-style",
                        "file to use."),
               cl::init("LLVM"), cl::cat(ClangFormatCategory));
 
+static cl::opt<bool>
+NoFallback("no-fallback",
+           cl::desc("Skip formatting when style specified with -style\n"
+                    "is not found or is invalid. Empty .clang-format\n"
+                    "file in conjunction with -style=file effectively\n"
+                    "disables formatting inside specific folder."),
+           cl::cat(ClangFormatCategory));
+
 static cl::opt<std::string>
 AssumeFilename("assume-filename",
                cl::desc("When reading from stdin, clang-format assumes this\n"
@@ -220,11 +228,16 @@ static bool format(StringRef FileName) {
   if (fillRanges(Sources, ID, Code.get(), Ranges))
     return true;
 
-  FormatStyle FormatStyle = getStyle(
-      Style, (FileName == "-") ? AssumeFilename : FileName, FallbackStyle);
+  bool Fallback = !NoFallback;
+  FormatStyle FormatStyle =
+      getStyle(Style, (FileName == "-") ? AssumeFilename : FileName,
+               FallbackStyle, Fallback);
   Lexer Lex(ID, Sources.getBuffer(ID), Sources,
             getFormattingLangOpts(FormatStyle.Standard));
-  tooling::Replacements Replaces = reformat(FormatStyle, Lex, Sources, Ranges);
+  tooling::Replacements Replaces;
+  if (!Fallback || !NoFallback) {
+    Replaces = reformat(FormatStyle, Lex, Sources, Ranges);
+  }
   if (OutputXML) {
     llvm::outs()
         << "<?xml version='1.0'?>\n<replacements xml:space='preserve'>\n";
@@ -289,10 +302,11 @@ int main(int argc, const char **argv) {
     cl::PrintHelpMessage();
 
   if (DumpConfig) {
+    bool Fallback = !NoFallback;
     std::string Config =
         clang::format::configurationAsText(clang::format::getStyle(
             Style, FileNames.empty() ? AssumeFilename : FileNames[0],
-            FallbackStyle));
+            FallbackStyle, Fallback));
     llvm::outs() << Config << "\n";
     return 0;
   }

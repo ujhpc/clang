@@ -1974,18 +1974,20 @@ static FormatStyle::LanguageKind getLanguageByFileName(StringRef FileName) {
 }
 
 FormatStyle getStyle(StringRef StyleName, StringRef FileName,
-                     StringRef FallbackStyle) {
+                     StringRef FallbackStyle, bool &Fallback) {
   FormatStyle Style = getLLVMStyle();
   Style.Language = getLanguageByFileName(FileName);
   if (!getPredefinedStyle(FallbackStyle, Style.Language, &Style)) {
     llvm::errs() << "Invalid fallback style \"" << FallbackStyle
                  << "\" using LLVM style\n";
+    Fallback = true;
     return Style;
   }
 
   if (StyleName.startswith("{")) {
     // Parse YAML/JSON style from the command line.
-    if (llvm::error_code ec = parseConfiguration(StyleName, &Style)) {
+    llvm::error_code ec = parseConfiguration(StyleName, &Style);
+    if ((Fallback = !!ec)) {
       llvm::errs() << "Error parsing -style: " << ec.message() << ", using "
                    << FallbackStyle << " style\n";
     }
@@ -1993,9 +1995,10 @@ FormatStyle getStyle(StringRef StyleName, StringRef FileName,
   }
 
   if (!StyleName.equals_lower("file")) {
-    if (!getPredefinedStyle(StyleName, Style.Language, &Style))
+    if ((Fallback = !getPredefinedStyle(StyleName, Style.Language, &Style))) {
       llvm::errs() << "Invalid value for -style, using " << FallbackStyle
                    << " style\n";
+    }
     return Style;
   }
 
@@ -2038,16 +2041,22 @@ FormatStyle getStyle(StringRef StyleName, StringRef FileName,
           UnsuitableConfigFiles.append(ConfigFile);
           continue;
         }
-        llvm::errs() << "Error reading " << ConfigFile << ": " << ec.message()
-                     << "\n";
+        if (Fallback) {
+          llvm::errs() << "Error reading " << ConfigFile << ": " << ec.message()
+                       << "\n";
+        }
         break;
       }
       DEBUG(llvm::dbgs() << "Using configuration file " << ConfigFile << "\n");
+      Fallback = false;
       return Style;
     }
   }
-  llvm::errs() << "Can't find usable .clang-format, using " << FallbackStyle
-               << " style\n";
+  if (Fallback) {
+    llvm::errs() << "Can't find usable .clang-format, using " << FallbackStyle
+                 << " style\n";
+  }
+  Fallback = true;
   if (!UnsuitableConfigFiles.empty()) {
     llvm::errs() << "Configuration file(s) do(es) not support "
                  << getLanguageName(Style.Language) << ": "

@@ -491,11 +491,13 @@ extern const char *StyleOptionHelpDescription;
 /// == "file".
 /// \param[in] FallbackStyle The name of a predefined style used to fallback to
 /// in case the style can't be determined from \p StyleName.
+/// \param[in,out] Fallback indicates if fallback style is intended to be used
+/// and if fallback style was returned.
 ///
 /// \returns FormatStyle as specified by \c StyleName. If no style could be
 /// determined, the default is LLVM Style (see getLLVMStyle()).
 FormatStyle getStyle(StringRef StyleName, StringRef FileName,
-                     StringRef FallbackStyle);
+                     StringRef FallbackStyle, bool &Fallback);
 
 } // end namespace format
 } // end namespace clang
