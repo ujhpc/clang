@@ -4641,6 +4641,12 @@ void InitializationSequence::InitializeFrom(Sema &S,
     return;
   }
 
+  // Try to init special OpenCL types
+  if (TryOCLSamplerInitialization(S, *this, DestType, Initializer) ||
+      TryOCLZeroEventInitialization(S, *this, DestType, Initializer)) {
+    return;
+  }
+
   // Determine whether we should consider writeback conversions for 
   // Objective-C ARC.
   bool allowObjCWritebackConversion = S.getLangOpts().ObjCAutoRefCount &&
@@ -4654,12 +4660,6 @@ void InitializationSequence::InitializeFrom(Sema &S,
         tryObjCWritebackConversion(S, *this, Entity, Initializer)) {
       return;
     }
-
-    if (TryOCLSamplerInitialization(S, *this, DestType, Initializer))
-      return;
-
-    if (TryOCLZeroEventInitialization(S, *this, DestType, Initializer))
-      return;
 
     // Handle initialization in C
     AddCAssignmentStep(DestType);
