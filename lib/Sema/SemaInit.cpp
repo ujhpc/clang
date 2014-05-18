@@ -4678,9 +4678,28 @@ void InitializationSequence::InitializeFrom(Sema &S,
     if (Kind.getKind() == InitializationKind::IK_Direct ||
         (Kind.getKind() == InitializationKind::IK_Copy &&
          (Context.hasSameUnqualifiedType(SourceType, DestType) ||
-          S.IsDerivedFrom(SourceType, DestType))))
+          S.IsDerivedFrom(SourceType, DestType)))) {
+
       TryConstructorInitialization(S, Entity, Kind, Args,
                                    Entity.getType(), *this);
+
+      // Relax rules and do implicit conversion if copy constructor
+      // initialization fails due address space mismatch and destination class
+      // is POD without user defined copy constructor
+      if (Failed() && Failure == FK_ConstructorOverloadFailed &&
+          Kind.getKind() == InitializationKind::IK_Copy &&
+          SourceType.getAddressSpace() != DestType.getAddressSpace()) {
+        const RecordType *DestRecordType = DestType->getAs<RecordType>();
+        CXXRecordDecl *DestRecordDecl
+          = cast<CXXRecordDecl>(DestRecordType->getDecl());
+        if (DestRecordDecl->isPOD() &&
+            !DestRecordDecl->hasUserDeclaredCopyConstructor() &&
+            DestRecordDecl->hasCopyConstructorWithConstParam()) {
+          setSequenceKind(SequenceKind::NormalSequence);
+          goto ImplicitConversion;
+        }
+      }
+    }
     //     - Otherwise (i.e., for the remaining copy-initialization cases),
     //       user-defined conversion sequences that can convert from the source
     //       type to the destination type or (when a conversion function is
@@ -4708,6 +4727,7 @@ void InitializationSequence::InitializeFrom(Sema &S,
     return;
   }
 
+ImplicitConversion:
   //    - Otherwise, the initial value of the object being initialized is the
   //      (possibly converted) value of the initializer expression. Standard
   //      conversions (Clause 4) will be used, if necessary, to convert the
